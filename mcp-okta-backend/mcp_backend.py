@@ -15,7 +15,7 @@ load_dotenv()
 OKTA_DOMAIN = os.getenv("OKTA_DOMAIN")  # e.g., "your-domain.okta.com"
 OKTA_AUDIENCE = os.getenv("OKTA_AUDIENCE", "api://default")
 PORT = int(os.getenv("PORT", "8080"))
-REQUIRED_SCOPE = int(os.getenv("REQUIRED_SCOPE", "openid"))
+REQUIRED_SCOPE = os.getenv("REQUIRED_SCOPE", "openid")
 
 
 def get_okta_public_key(kid: str) -> str:
