@@ -14,6 +14,8 @@ load_dotenv()
 # Configuration - set these environment variables
 OKTA_DOMAIN = os.getenv("OKTA_DOMAIN")  # e.g., "your-domain.okta.com"
 OKTA_AUDIENCE = os.getenv("OKTA_AUDIENCE", "api://default")
+PORT = int(os.getenv("PORT", "8080"))
+REQUIRED_SCOPE = int(os.getenv("REQUIRED_SCOPE", "openid"))
 
 
 def get_okta_public_key(kid: str) -> str:
@@ -58,6 +60,17 @@ def verify_jwt_token(
             issuer=f"https://{OKTA_DOMAIN}/oauth2/default",
         )
 
+        # Check for required scope
+        scopes = payload.get("scp", [])
+        if isinstance(scopes, str):
+            scopes = scopes.split()
+
+        if REQUIRED_SCOPE not in scopes:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient scope: mcp:backend required",
+            )
+
         return payload
 
     except jwt.ExpiredSignatureError:
@@ -94,6 +107,7 @@ if __name__ == "__main__":
         exit(1)
 
     print(f"Starting JWT validator with Okta domain: {OKTA_DOMAIN}")
+    print(f"Listening on port: {PORT}")
     print("Send requests with: Authorization: Bearer <your-jwt-token>")
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=PORT)
