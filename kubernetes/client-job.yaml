@@ -1,0 +1,67 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mcp-okta-client
+  labels:
+    app: mcp-okta-client
+spec:
+  template:
+    metadata:
+      labels:
+        app: mcp-okta-client
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: mcp-client
+        image: mcp-okta-client:latest
+        env:
+        # Okta Configuration from secrets
+        - name: OKTA_DOMAIN
+          valueFrom:
+            secretKeyRef:
+              name: okta-credentials
+              key: domain
+        - name: OKTA_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: okta-credentials
+              key: client-id
+        - name: OKTA_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: okta-credentials
+              key: client-secret
+        - name: OKTA_ISSUER
+          valueFrom:
+            secretKeyRef:
+              name: okta-credentials
+              key: issuer
+        - name: MCP_REQUIRED_SCOPES
+          valueFrom:
+            secretKeyRef:
+              name: okta-credentials
+              key: scope
+        # MCP Server URL (points to service)
+        - name: MCP_SERVER_URL
+          value: "http://mcp-okta-server:8001/mcp"
+        # SSL Configuration
+        - name: VERIFY_SSL
+          value: "true"  # Set to "false" for self-signed certificates
+        # - name: CA_BUNDLE_PATH
+        #   value: "/etc/ssl/certs/ca-bundle.crt"  # Path to custom CA bundle
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
+  backoffLimit: 3

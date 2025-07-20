@@ -1,0 +1,22 @@
+[project]
+name = "mcp-okta-server"
+requires-python = "==3.12.9"
+version = "0.1.0"
+description = "MCP Server with Okta OAuth authentication"
+dependencies = [
+    "mcp>=1.0.0",
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+    "httpx>=0.25.0",
+    "python-dotenv>=1.0.0",
+    "python-jose[cryptography]>=3.3.0"
+]
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.402",
+]
+
+# [build-system]
+# requires = ["hatchling"]
+# build-backend = "hatchling.build"

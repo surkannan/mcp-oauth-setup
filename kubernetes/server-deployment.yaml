@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-okta-server
+  labels:
+    app: mcp-okta-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-okta-server
+  template:
+    metadata:
+      labels:
+        app: mcp-okta-server
+    spec:
+      containers:
+      - name: mcp-server
+        image: mcp-okta-server:latest
+        ports:
+        - containerPort: 8001
+          name: http
+        env:
+        # Okta Configuration from secrets
+        - name: OKTA_DOMAIN
+          valueFrom:
+            secretKeyRef:
+              name: okta-credentials
+              key: domain
+        - name: OKTA_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: okta-credentials
+              key: client-id
+        - name: OKTA_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: okta-credentials
+              key: client-secret
+        - name: OKTA_AUDIENCE
+          valueFrom:
+            secretKeyRef:
+              name: okta-credentials
+              key: audience
+        - name: OKTA_ISSUER
+          valueFrom:
+            secretKeyRef:
+              name: okta-credentials
+              key: issuer
+        - name: MCP_REQUIRED_SCOPES
+          valueFrom:
+            secretKeyRef:
+              name: okta-credentials
+              key: scope
+        # Server Configuration
+        - name: MCP_SERVER_HOST
+          value: "0.0.0.0"  # Bind to all interfaces in container
+        - name: MCP_SERVER_PORT
+          value: "8001"
+        - name: MCP_SERVER_URL
+          value: "http://mcp-okta-server:8001"  # Service name
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /.well-known/oauth-protected-resource
+            port: 8001
+            httpHeaders:
+            - name: MCP-Protocol-Version
+              value: "2025-06-18"
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /.well-known/oauth-protected-resource
+            port: 8001
+            httpHeaders:
+            - name: MCP-Protocol-Version
+              value: "2025-06-18"
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-okta-server
+  labels:
+    app: mcp-okta-server
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8001
+    targetPort: 8001
+    protocol: TCP
+    name: http
+  selector:
+    app: mcp-okta-server
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: okta-credentials
+type: Opaque
+stringData:
+  domain: "https://dev-77377857.okta.com"
+  client-id: "your-client-id"
+  client-secret: "your-client-secret"
+  audience: "api://mcp"
+  issuer: "https://dev-77377857.okta.com/oauth2/auspgx6ebo33Ebh3k5d7"
+  scope: "mcp:access"

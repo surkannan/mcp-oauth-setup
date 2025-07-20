@@ -1,0 +1,15 @@
+[project]
+name = "mcp-okta-client"
+version = "0.1.0"
+requires-python = "==3.12.9"
+description = "MCP Client with Okta OAuth authentication"
+dependencies = [
+    "mcp>=1.0.0",
+    "httpx>=0.25.0",
+    "python-dotenv>=1.0.0"
+]
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.402",
+]
