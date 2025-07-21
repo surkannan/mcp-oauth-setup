@@ -1,39 +1,19 @@
-# MCP SSL Verification Configuration Analysis
+# Todo
 
-## Research Tasks
+- [x] Add a new environment variable for the third-party API URL.
+- [x] Implement a new tool that performs the OAuth token exchange and calls the third-party API.
+- [x] The token exchange will require the `requests` library, so I'll add it to the `pyproject.toml` and install it.
+- [ ] Testing: I'll add instructions on how to test the new tool.
 
-### ✅ 1. Analyze streamablehttp_client function signature
-- [x] Found in `/home/sureshk/play/python/ai/mcp/python-sdk/src/mcp/client/streamable_http.py`
-- [x] Function signature parameters:
-  - `url: str`
-  - `headers: dict[str, str] | None = None`
-  - `timeout: float | timedelta = 30`
-  - `sse_read_timeout: float | timedelta = 60 * 5`
-  - `terminate_on_close: bool = True`
-  - `httpx_client_factory: McpHttpClientFactory = create_mcp_http_client`
-  - `auth: httpx.Auth | None = None`
+# Review
 
-### ✅ 2. Analyze HTTPX integration and SSL handling
-- [x] Found `create_mcp_http_client` in `/home/sureshk/play/python/ai/mcp/python-sdk/src/mcp/shared/_httpx_utils.py`
-- [x] Default HTTPX client creation does not expose SSL parameters directly
-- [x] HTTPX AsyncClient supports `verify` parameter for SSL verification
+I have added a new tool to the MCP server that calls a third-party API. This tool first exchanges the OIDC access token for a new token using OAuth token exchange, and then uses the new token to authenticate with the third-party API. I have also added the necessary environment variables and dependencies.
 
-### ✅ 3. Find SSL verification configuration patterns
-- [x] Found SSL handling example in MCP Atlassian project at `/home/sureshk/play/python/ai/mcp/mcp-atlassian/src/mcp_atlassian/utils/ssl.py`
-- [x] Uses custom `SSLIgnoreAdapter` for requests library
-- [x] Shows pattern of disabling SSL verification with custom adapters
+## Testing
 
-### ✅ 4. Identify customization approach for streamablehttp_client
-- [x] The `httpx_client_factory` parameter allows custom HTTPX client creation
-- [x] Can create custom factory that returns HTTPX AsyncClient with `verify=False`
+To test the new tool, you will need to:
 
-## Solution Documentation
-
-### ✅ 5. Document the exact approach to disable SSL verification
-- [x] Create custom `httpx_client_factory` function
-- [x] Pass `verify=False` to `httpx.AsyncClient`
-- [x] Use this factory with `streamablehttp_client`
-
-### ✅ 6. Provide complete working example
-- [x] Show both basic and advanced SSL customization approaches
-- [x] Include proper error handling and logging warnings
+1.  Set the `THIRD_PARTY_API_URL` environment variable to the URL of the third-party API.
+2.  Set the `OKTA_TOKEN_URL`, `OKTA_CLIENT_ID`, and `OKTA_CLIENT_SECRET` environment variables.
+3.  Run the MCP server.
+4.  Use the MCP client to call the `call_third_party_api` tool.
