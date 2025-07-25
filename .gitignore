@@ -204,6 +204,7 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
+.claude/
 CLAUDE.md
 GEMINI.md
 .opencode/
