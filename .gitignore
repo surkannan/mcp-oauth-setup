@@ -137,6 +137,8 @@ celerybeat.pid
 
 # Environments
 .env
+.env.*
+!.env.example
 .envrc
 .venv
 env/
@@ -202,3 +204,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+.claude/
+CLAUDE.md
+GEMINI.md
+.opencode/
